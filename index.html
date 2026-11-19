@@ -60,7 +60,7 @@ function renderHome(){
   const r=open(p.id),last=latest(p.id),isOpen=!!r;
   const lastText=isOpen?"Entrada registrada: "+stamp(r.startAt):last?"Último turno: "+stamp(last.startAt)+(last.endAt?" a "+stamp(last.endAt):""):"Sin turnos registrados";
   const note=isOpen?r.note:(db.drafts[p.id]||"");
-  return '<article class="worker"><h2>'+esc(p.name)+'</h2><p class="state">'+(isOpen?"● Turno en curso":"● Listo para registrar")+'</p><p>'+esc(lastText)+'</p>'+(isOpen?'<p>Tiempo transcurrido: '+duration(Math.round((Date.now()-Date.parse(r.startAt))/60000))+'</p>':'')+'<button class="big '+(isOpen?"out":"primary")+'" data-punch="'+esc(p.id)+'">'+(isOpen?"Finalizar turno":"Entrar al turno")+'</button><label>Observaciones (opcional)<textarea data-note="'+esc(p.id)+'" placeholder="Ej.: cambio de turno, cobertura de feriado...">'+esc(note)+'</textarea></label></article>'
+  return '<article class="worker"><h2>'+esc(p.name)+'</h2><p class="state">'+(isOpen?"● Turno en curso":"● Listo para registrar")+'</p><p>'+esc(lastText)+'</p>'+(isOpen?'<p>Tiempo transcurrido: <span class="elapsed">'+duration(Math.max(0,Math.round((Date.now()-Date.parse(r.startAt))/60000)))+'</span></p>':'')+'<button class="big '+(isOpen?"out":"primary")+'" data-punch="'+esc(p.id)+'">'+(isOpen?"Finalizar turno":"Entrar al turno")+'</button><label>Observaciones (opcional)<textarea data-note="'+esc(p.id)+'" placeholder="Ej.: cambio de turno, cobertura de feriado...">'+esc(note)+'</textarea></label></article>'
  }).join("");
 }
 function renderAdmin(){
