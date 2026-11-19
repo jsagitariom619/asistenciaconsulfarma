@@ -1,70 +1,160 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#176c50"><title>CONSULFARMA — Asistencias</title><style>
-*{box-sizing:border-box}body{margin:0;background:#f5f8f6;color:#193a2b;font:14px system-ui,sans-serif}header{background:#176c50;color:white;padding:18px max(16px,calc((100% - 1120px)/2))}header h1{font-size:21px;margin:0}header p{margin:4px 0 0;opacity:.82}main{max-width:1120px;margin:auto;padding:18px 14px}nav{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:17px}button{padding:10px 13px;border:0;border-radius:9px;background:#e3eee7;color:#1d5a43;font-weight:650;cursor:pointer}button.active,button.primary{background:#176c50;color:#fff}.card,.stat{background:white;border:1px solid #dbe7df;border-radius:13px;padding:17px;margin:0 0 14px;box-shadow:0 2px 12px #16402a0a}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.stat{margin:0}.stat strong{display:block;font-size:26px;margin-top:5px}h2{font-size:21px;margin:0 0 15px}h3{font-size:16px;margin:0 0 12px}.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));align-items:end;gap:11px}label{font-weight:600;font-size:12px;color:#496756}input,select{display:block;width:100%;padding:10px;margin-top:6px;border-radius:8px;border:1px solid #c4d6cb;background:white;color:#143723;font:inherit}.actions{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0}.scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:9px;text-align:left;border-bottom:1px solid #e6eee8;vertical-align:top}th{background:#f1f6f2;white-space:nowrap}.hidden{display:none!important}.muted{color:#6b8071;font-size:12px}.notice{padding:12px;background:#eaf4ed;border-left:3px solid #176c50;border-radius:6px;margin:12px 0}.bad{color:#af3333}.ok{color:#176c50}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}#printHead{display:none}@media print{header,nav,.no-print,#inicio,#marcar,#personal,#turnos,#historial,#config{display:none!important}body{background:white}main{max-width:none;padding:0}#report{display:block!important}#printHead{display:block}.card{box-shadow:none;border:none;padding:0}th,td{padding:5px;font-size:10px}}
-.worker-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.worker{background:#fff;border:1px solid #d9e7dd;border-radius:17px;padding:22px;box-shadow:0 3px 14px #193a2b0a}.worker h3{font-size:19px;margin:0 0 7px}.worker .state{margin:0 0 8px;font-size:13px;color:#526b5d}.worker .time{font-size:14px;color:#1b513b;margin-bottom:15px}.worker button{width:100%;min-height:60px;font-size:17px;border-radius:12px}.worker button.end{background:#bc5934;color:#fff}.worker button:disabled{background:#e7ece9;color:#6e8176;cursor:not-allowed}.worker details{margin-top:14px;color:#64796c}.worker summary{cursor:pointer;font-size:12px}.worker input{margin-top:8px}.clock{margin-bottom:20px;color:#617a68}.setup-note{padding:18px;background:#fff;border:1px dashed #aec5b6;border-radius:12px}.adminbar{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}.adminbar button.active{background:#176c50;color:#fff}@media(max-width:620px){.worker-grid{grid-template-columns:1fr}.worker{padding:18px}}@media print{.worker-grid,.clock,#adminNav{display:none!important}}
-</style></head><body><header><h1>✚ CONSULFARMA | Sistema de Asistencias</h1><p>mucho más que una medicación</p></header><main><nav class="no-print"><button class="active" data-tab="inicio">Registro</button><button data-tab="report">Reportes</button><button data-tab="personal">Administración</button></nav><div class="adminbar hidden no-print" id="adminNav"><button class="active" data-admin="personal">Personal</button><button data-admin="turnos">Cambios de turno</button><button data-admin="historial">Historial</button><button data-admin="config">Configuración y respaldos</button></div>
-<section id="inicio" class="tab"><h2>Registro de turnos</h2><p class="clock" id="clockBolivia"></p><div class="worker-grid" id="workerCards"></div><p id="feedback" role="status" style="font-weight:600;color:#176c50"></p><div id="stats" class="hidden"></div><div id="recent" class="hidden"></div><p class="muted" style="margin-top:20px">Las horas se registran automáticamente al pulsar cada botón. Los datos se guardan en este dispositivo; usa el respaldo de Administración.</p></section>
-<section id="marcar" class="tab hidden"><h2>Registro de entrada y salida</h2><div class="card"><div class="form"><label>Trabajador<select id="markPerson"></select></label><label>Movimiento<select id="markType"><option value="in">Entrada</option><option value="out">Salida</option></select></label></div><div class="actions"><button class="primary" id="markBtn">Registrar hora actual</button></div><p class="muted">Hora del dispositivo, mostrada según la zona horaria de Bolivia. Mantén correctamente configurado el reloj del dispositivo.</p></div></section>
-<section id="personal" class="tab hidden"><h2>Personal</h2><div class="card"><form id="personForm"><div class="form"><label>Nombre completo<input id="pn" required maxlength="100"></label><label>Entrada habitual<input id="ps" type="time" value="08:00" required></label><label>Salida habitual<input id="pe" type="time" value="17:00" required></label><label>Horas ordinarias diarias<input id="ph" type="number" step=".5" min="1" max="15" value="8" required></label><label>Valor hora referencial (Bs)<input id="pr" type="number" step=".01" min="0" value="0"></label><label>Días habituales<select id="pd"><option value="1,2,3,4,5,6">Lunes a sábado</option><option value="1,2,3,4,5">Lunes a viernes</option><option value="0,1,2,3,4,5,6">Todos los días</option></select></label></div><div class="actions"><button class="primary">Agregar trabajador</button></div></form></div><div class="card"><div class="scroll" id="personTable"></div></div></section>
-<section id="turnos" class="tab hidden"><h2>Turnos y jornadas especiales</h2><div class="card"><form id="shiftForm"><div class="form"><label>Trabajador<select id="shiftPerson"></select></label><label>Fecha<input id="shiftDate" type="date" required></label><label>Clase de turno<select id="shiftKind"><option value="normal">Cambio de turno</option><option value="especial">Jornada especial 15 h</option><option value="feriado">Trabajo en feriado</option><option value="descanso">Descanso / permiso</option></select></label><label>Inicio<input id="shiftStart" type="time" value="07:00"></label><label>Fin<input id="shiftEnd" type="time" value="22:00"></label><label>Motivo y responsable<input id="shiftNote" maxlength="200" required></label></div><div class="actions"><button class="primary">Guardar turno</button></div></form><p class="muted">La nueva asignación rige solamente en la fecha seleccionada. Las jornadas especiales se identifican para el cálculo de horas adicionales remuneradas.</p></div><div class="card"><div class="scroll" id="shiftTable"></div></div></section>
-<section id="historial" class="tab hidden"><h2>Historial y correcciones</h2><div class="card"><div class="form"><label>Desde<input id="histFrom" type="date"></label><label>Hasta<input id="histTo" type="date"></label><label>Trabajador<select id="histPerson"></select></label></div><div class="actions"><button id="histRefresh">Consultar</button></div></div><div class="card"><div class="scroll" id="histTable"></div></div><div class="card no-print"><h3>Corrección administrativa</h3><form id="correctionForm"><div class="form"><label>Trabajador<select id="corPerson"></select></label><label>Fecha<input id="corDate" type="date" required></label><label>Entrada<input id="corIn" type="time"></label><label>Salida<input id="corOut" type="time"></label><label>Motivo<input id="corReason" required maxlength="200"></label><label>PIN administrador<input id="corPin" type="password" required></label></div><div class="actions"><button class="primary">Guardar corrección auditada</button></div></form></div></section>
-<section id="report" class="tab hidden"><div id="printHead"><h2>CONSULFARMA — Reporte de asistencias</h2><p id="printMeta"></p></div><h2 class="no-print">Reportes imprimibles</h2><div class="card no-print"><div class="form"><label>Desde<input id="repFrom" type="date"></label><label>Hasta<input id="repTo" type="date"></label><label>Trabajador<select id="repPerson"></select></label></div><div class="actions"><button class="primary" id="repRefresh">Generar reporte</button><button id="printBtn">Imprimir / guardar PDF</button><button id="csvBtn">Exportar Excel (CSV)</button></div></div><div class="grid" id="reportStats"></div><div class="card"><div class="scroll" id="reportTable"></div></div><p class="muted">Los importes son estimaciones configurables, no liquidaciones laborales definitivas. Revisar recargos por feriados, límites de jornada y descansos conforme a la normativa boliviana.</p></section>
-<section id="config" class="tab hidden"><h2>Configuración y respaldos</h2><div class="card"><form id="settingsForm"><div class="form"><label>Tolerancia de retraso (min)<input id="tolerance" type="number" min="0" max="120"></label><label>Descanso no trabajado por jornada (min)<input id="breakMin" type="number" min="0" max="180"></label><label>Multiplicador estimativo de horas adicionales<input id="multiplier" type="number" min="1" max="5" step=".1"></label><label>PIN actual<input id="oldPin" type="password" required></label><label>Nuevo PIN (opcional)<input id="newPin" type="password" minlength="4"></label></div><div class="actions"><button class="primary">Guardar configuración</button></div></form><p class="muted">PIN inicial: 0000. Cámbialo. Este PIN local no sustituye una autenticación de servidor.</p></div><div class="card"><h3>Respaldo de información</h3><div class="actions"><button id="exportBtn">Exportar respaldo JSON</button><label class="no-print">Restaurar respaldo JSON<input id="restoreFile" type="file" accept=".json,application/json"></label></div><p class="muted">La restauración reemplaza los registros locales. Conserva un respaldo antes de restaurar.</p></div></section></main><script>
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#176c50"><title>CONSULFARMA — Registro de turnos</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#173a2b;background:#f5f8f6}*{box-sizing:border-box}body{margin:0;font-size:15px}header{background:#176c50;color:white;padding:18px max(18px,calc((100vw - 1100px)/2))}.brand{font-weight:750;font-size:22px}.sub{opacity:.85;font-size:13px;margin-top:3px}.clock{margin-top:12px;font-size:13px;font-variant-numeric:tabular-nums}main{max-width:1100px;margin:auto;padding:18px}nav{display:flex;gap:9px;margin-bottom:20px;flex-wrap:wrap}button{border:0;cursor:pointer;background:#e5efe9;color:#1d5a41;border-radius:10px;font:inherit;font-weight:650;padding:10px 14px}button.primary,nav button.active{background:#176c50;color:white}button.out{background:#b75434;color:#fff}button.small{font-size:12px;padding:8px 10px}button.danger{background:#fbe9e5;color:#912e24}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #57ae82;outline-offset:2px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.worker,.card{background:white;border:1px solid #d9e7df;border-radius:17px;padding:22px;box-shadow:0 2px 12px #173a2b0b}.worker h2{font-size:21px;margin:0 0 8px}.worker p{margin:5px 0;color:#617365}.worker .state{font-size:13px;font-weight:700;margin-bottom:12px;color:#176c50}.worker .big{width:100%;padding:18px 12px;font-size:18px;margin:16px 0 12px;min-height:62px}.worker label{display:block;font-size:13px;font-weight:650;color:#395e49}.worker textarea{margin-top:7px}.note{font-size:12px;color:#627a6a;margin-top:16px}.card{margin-bottom:16px}h1{font-size:23px;margin:4px 0 16px}h2{font-size:18px;margin:0 0 13px}h3{font-size:15px;margin:0 0 10px}.toolbar{display:flex;align-items:end;gap:12px;flex-wrap:wrap}.toolbar>*{flex:1 1 165px}label{font-size:13px;font-weight:650;color:#4b6956}input,textarea,select{font:inherit;width:100%;padding:11px;border:1px solid #c5d9ca;border-radius:9px;background:#fff;color:#173a2b}input,select{margin-top:5px}textarea{min-height:75px;resize:vertical}label.checkbox{display:flex;gap:8px}label.checkbox input{width:auto}.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:14px 0}.stat{padding:15px;background:#f2f7f3;border-radius:10px}.stat strong{display:block;font-size:25px;margin-top:5px}.scroll{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:650px}th,td{border-bottom:1px solid #e1eae4;padding:11px 9px;text-align:left;vertical-align:top;font-size:13px}th{background:#f2f7f3;color:#4d6b5a}td.note-cell{max-width:250px;white-space:pre-wrap;word-break:break-word}.rows{display:grid;gap:9px}.staff-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid #edf1ee}.staff-row input{flex:1 1 240px}.status{margin:12px 0;color:#176c50;font-weight:650;min-height:21px}.muted{font-size:12px;color:#6c7e70}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions button{flex:0 1 auto}.hidden{display:none!important}.notice{padding:12px 14px;background:#eaf3ed;border-left:3px solid #176c50;border-radius:7px;margin-top:16px}.empty{padding:26px;background:white;border:1px dashed #bacfbf;border-radius:14px;text-align:center}.danger-text{color:#a03c2b}#printHeader{display:none}@media(max-width:670px){.grid{grid-template-columns:1fr}.worker,.card{padding:17px}.brand{font-size:19px}}@media print{header,nav,#screen-home,#screen-admin,.no-print{display:none!important}body,:root{background:white}main{max-width:none;padding:0}#screen-report{display:block!important}#printHeader{display:block}.card{border:0;box-shadow:none;padding:0}th,td{padding:6px;font-size:10px}.stat{break-inside:avoid}table{min-width:0}}
+</style></head><body>
+<header><div class="brand">✚ CONSULFARMA · Asistencias</div><div class="sub">mucho más que una medicación</div><div class="clock" id="clock"></div></header>
+<main><nav class="no-print"><button data-nav="home" class="active">Registrar asistencia</button><button data-nav="report">Reportes</button><button data-nav="admin">Administración</button></nav>
+<section id="screen-home"><h1>Registro de turnos</h1><div id="workers" class="grid"></div><div class="status" id="homeStatus" role="status"></div><p class="note">Selecciona tu nombre y presiona «Entrar al turno» o «Finalizar turno». La fecha y la hora se registran automáticamente. Puedes escribir una observación si lo necesitas.</p></section>
+<section id="screen-report" class="hidden"><div id="printHeader"><h1>CONSULFARMA — Reporte de asistencias</h1><p id="printRange"></p></div><h1 class="no-print">Reporte de asistencias</h1><div class="card no-print"><div class="toolbar"><label>Desde<input id="dateFrom" type="date"></label><label>Hasta<input id="dateTo" type="date"></label><label>Auxiliar<select id="reportPerson"></select></label></div><div class="actions"><button id="generate" class="primary">Consultar</button><button id="print">Imprimir / PDF</button><button id="csv">Exportar a Excel (CSV)</button></div></div><div class="card"><div class="summary" id="summary"></div><div class="scroll" id="reportTable"></div></div></section>
+<section id="screen-admin" class="hidden"><h1>Administración</h1><div class="card"><h2>Personal (máximo 4 activos)</h2><form id="addForm" class="toolbar"><label>Nombre del auxiliar<input id="newName" required maxlength="100" placeholder="Nombre y apellido"></label><button class="primary" type="submit">Agregar auxiliar</button></form><div class="rows" id="staffList"></div></div>
+<div class="card"><h2>Respaldos</h2><div class="actions"><button id="backup">Descargar respaldo JSON</button><label>Restaurar respaldo<input id="restore" type="file" accept=".json,application/json"></label></div><p class="muted">La restauración reemplaza la información local de esta versión. Conserva el archivo de respaldo.</p></div>
+<div class="card"><h2>Seguridad administrativa</h2><form id="pinForm" class="toolbar"><label>Nuevo PIN<input id="newPin" type="password" required minlength="4" autocomplete="new-password"></label><button class="primary" type="submit">Cambiar PIN</button></form><p class="muted">PIN inicial: 0000. El PIN protege los ajustes en este navegador; no equivale a una contraseña de servidor.</p></div>
+<div class="notice">Los registros se guardan exclusivamente en este navegador y dispositivo, no se sincronizan entre celulares. El reloj del dispositivo debe estar correctamente configurado.</div></section></main>
+<script>
+(function(){
 "use strict";
-const K="consulfarma_attendance_v1",TZ="America/La_Paz",$=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])),id=()=>Date.now().toString(36)+Math.random().toString(36).slice(2),dt=(d=new Date())=>{const v=Object.fromEntries(new Intl.DateTimeFormat("en-US",{timeZone:TZ,year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(d).map(x=>[x.type,x.value]));return v.year+"-"+v.month+"-"+v.day},tm=(d=new Date())=>new Intl.DateTimeFormat("en-GB",{timeZone:TZ,hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(d),mins=t=>{const x=(t||"00:00").split(":").map(Number);return x[0]*60+x[1]},span=(a,b)=>{let n=mins(b)-mins(a);return n<0?n+1440:n},money=n=>"Bs "+Number(n||0).toFixed(2),download=(s,filename,type)=>{let a=document.createElement("a"),u=URL.createObjectURL(new Blob([s],{type}));a.href=u;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(u),2000)};
-let db;try{db=JSON.parse(localStorage.getItem(K))}catch(e){}if(!db||!Array.isArray(db.people)||!Array.isArray(db.records)||!Array.isArray(db.shifts))db={people:[],records:[],shifts:[],audit:[],settings:{pin:"0000",tolerance:5,multiplier:2,breakMin:0}};db.settings??={pin:"0000",tolerance:5,multiplier:2,breakMin:0};db.audit??=[];const save=()=>{try{localStorage.setItem(K,JSON.stringify(db))}catch(e){alert("Error guardando datos: "+e.message)}},active=()=>db.people.filter(x=>x.active!==false),person=i=>db.people.find(x=>x.id===i),pname=i=>person(i)?.name||"Sin nombre",shift=(p,d)=>db.shifts.find(x=>x.person===p.id&&x.date===d)||{kind:(p.days||[1,2,3,4,5,6]).includes(new Date(d+"T12:00:00Z").getUTCDay())?"normal":"descanso",start:p.start,end:p.end,note:"Horario habitual"},rec=(i,d)=>db.records.find(x=>x.person===i&&x.date===d),selects=()=>{const opts='<option value="">Seleccionar</option>'+active().map(p=>'<option value="'+p.id+'">'+esc(p.name)+'</option>').join("");["markPerson","shiftPerson","corPerson"].forEach(i=>{$(i).innerHTML=opts});["histPerson","repPerson"].forEach(i=>{$(i).innerHTML='<option value="">Todos</option>'+opts.replace('<option value="">Seleccionar</option>','')})},table=(heads,rows)=>'<table><thead><tr>'+heads.map(h=>'<th>'+h+'</th>').join("")+'</tr></thead><tbody>'+(rows.length?rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join("")+'</tr>').join(""):'<tr><td colspan="'+heads.length+'">No hay registros para mostrar</td></tr>')+'</tbody></table>';
-function enumerate(from,to,pid){const fromD=new Date(from+"T12:00:00Z"),toD=new Date(to+"T12:00:00Z");if(!Number.isFinite(+fromD)||!Number.isFinite(+toD)||toD<fromD||toD-fromD>370*86400000)return [];let rows=[];for(let d=new Date(fromD);d<=toD;d.setUTCDate(d.getUTCDate()+1)){let date=d.toISOString().slice(0,10);for(let p of active().filter(p=>!pid||p.id===pid)){let s=shift(p,date),r=rec(p.id,date),working=s.kind!=="descanso",scheduled=working?Math.max(0,span(s.start,s.end)-Number(db.settings.breakMin||0)):0,actual=r?.start&&r?.end?Math.max(0,span(r.start,r.end)-Number(db.settings.breakMin||0)):0,delay=r?.start&&working?Math.max(0,mins(r.start)-mins(s.start)):0,late=delay>Number(db.settings.tolerance||0),extra=working&&r?.start&&r?.end?Math.max(0,actual-Number(p.hours||8)*60):0,absent=working&&!r?.start&&date<dt(),incomplete=!!(r&&(!!r.start!==!!r.end));rows.push({date,p,s,r,scheduled,actual,delay,late,extra,absent,incomplete})}}return rows}
-
-function renderWorkers(){
-const list=active(),now=new Date();
-$("clockBolivia").textContent=new Intl.DateTimeFormat("es-BO",{timeZone:TZ,weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(now)+" · "+tm(now)+" (Bolivia)";
-if(!list.length){$("workerCards").innerHTML='<div class="setup-note">Todavía no hay personal registrado. Ingresa a <strong>Administración → Personal</strong> para agregar hasta cuatro trabajadores. PIN inicial: 0000.</div>';return}
-$("workerCards").innerHTML=list.map(p=>{
-const opened=db.records.find(r=>r.person===p.id&&r.start&&!r.end);
-const finished=rec(p.id,dt());
-const assigned=shift(p,opened?.date||dt());
-const schedule=assigned.kind==="descanso"?"Descanso":assigned.start+" a "+assigned.end+(assigned.kind==="especial"?" · Especial":assigned.kind==="feriado"?" · Feriado":"");
-const latest=[...db.records].filter(r=>r.person===p.id).sort((a,b)=>(b.date+" "+(b.end||b.start)).localeCompare(a.date+" "+(a.end||a.start)))[0];
-const state=opened?"Turno en curso":finished?"Turno de hoy finalizado":"Sin turno iniciado";
-const when=opened?"Entrada: "+opened.date+" a las "+opened.start:latest?"Último turno: "+latest.date+" · "+(latest.start||"—")+" a "+(latest.end||"pendiente"):"Aún no tiene marcaciones";
-const disabled=!opened&&!!finished;
-return '<article class="worker"><h3>'+esc(p.name)+'</h3><p class="state">'+esc(state)+'</p><div class="time">Horario: '+esc(schedule)+'<br>'+esc(when)+'</div><button class="'+(opened?"end":"primary")+'" data-person="'+esc(p.id)+'" '+(disabled?"disabled":"")+'>'+(opened?"Finalizar turno":finished?"Turno registrado":"Entrar al turno")+'</button><details><summary>Observación (opcional)</summary><input maxlength="200" placeholder="Ej.: cambio de turno" data-note="'+esc(p.id)+'" aria-label="Observación de '+esc(p.name)+'"></details></article>'
-}).join("");
+const STORE="consulfarma_simple_v2", OLD="consulfarma_attendance_v1", TZ="America/La_Paz";
+const $=id=>document.getElementById(id);
+const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,10);
+const pad=n=>String(n).padStart(2,"0");
+const parts=date=>Object.fromEntries(new Intl.DateTimeFormat("en-US",{timeZone:TZ,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(date).map(x=>[x.type,x.value]));
+function dayOf(iso){const p=parts(new Date(iso));return p.year+"-"+p.month+"-"+p.day}
+function displayDate(iso){const p=parts(new Date(iso));return p.day+"/"+p.month+"/"+p.year}
+function displayTime(iso){const p=parts(new Date(iso));return p.hour+":"+p.minute}
+function stamp(iso){return displayDate(iso)+" · "+displayTime(iso)}
+function minutes(r){if(!r.endAt)return 0;const diff=Date.parse(r.endAt)-Date.parse(r.startAt);return Number.isFinite(diff)?Math.max(0,Math.round(diff/60000)):0}
+function duration(n){return Math.floor(n/60)+" h "+pad(n%60)+" min"}
+function legacyISO(date,time){if(!/^\d{4}-\d\d-\d\d$/.test(date||"")||!/^\d\d:\d\d$/.test(time||""))return null;const x=new Date(date+"T"+time+":00-04:00");return Number.isFinite(+x)?x.toISOString():null}
+function migrate(){
+ const seed={version:2,people:[],records:[],drafts:{},pin:"0000"};
+ let old=null;try{old=JSON.parse(localStorage.getItem(OLD)||"null")}catch(e){}
+ if(!old)return seed;
+ if(Array.isArray(old.people))seed.people=old.people.filter(p=>p&&p.id&&p.name).map(p=>({id:String(p.id),name:String(p.name),active:p.active!==false}));
+ if(old.settings&&typeof old.settings.pin==="string")seed.pin=old.settings.pin;
+ if(Array.isArray(old.records))old.records.forEach((r,i)=>{
+   if(!r||!r.person||!r.date||!r.start)return;
+   const startAt=legacyISO(r.date,r.start);if(!startAt)return;
+   let endAt=r.end?legacyISO(r.endDate||r.date,r.end):null;
+   if(endAt&&Date.parse(endAt)<Date.parse(startAt)){const d=new Date(Date.parse(endAt)+86400000);endAt=d.toISOString()}
+   seed.records.push({id:"legacy-"+i+"-"+String(r.person),person:String(r.person),startAt,endAt,note:String(r.note||""),legacy:true});
+ });
+ return seed;
 }
-$("workerCards").addEventListener("click",e=>{
-const b=e.target.closest("button[data-person]");if(!b||b.disabled)return;
-const personId=b.dataset.person;if(!person(personId)||person(personId).active===false)return;
-const opened=db.records.find(r=>r.person===personId&&r.start&&!r.end);
-const note=$("workerCards").querySelector('[data-note="'+personId+'"]')?.value.trim()||"";
-const now=new Date(),date=dt(now),time=tm(now);
-if(opened){
-opened.end=time;opened.endDate=date;
-if(note)opened.note=[opened.note,note].filter(Boolean).join(" | ");
-db.audit.push({at:now.toISOString(),event:"salida",person:personId,recordDate:opened.date,endDate:date,time});
-}else{
-if(rec(personId,date))return alert("Ya existe un turno registrado para hoy. Administración puede revisar el historial.");
-db.records.push({person:personId,date,start:time,end:"",note,createdAt:now.toISOString()});
-db.audit.push({at:now.toISOString(),event:"entrada",person:personId,recordDate:date,time});
+function valid(x){return !!x&&Array.isArray(x.people)&&Array.isArray(x.records)&&typeof x.pin==="string"&&x.people.every(p=>p&&typeof p.id==="string"&&typeof p.name==="string")&&x.records.every(r=>r&&typeof r.person==="string"&&Number.isFinite(Date.parse(r.startAt))&&(!r.endAt||Number.isFinite(Date.parse(r.endAt))))}
+let db;
+try{const saved=localStorage.getItem(STORE);db=saved?JSON.parse(saved):migrate();if(!valid(db))throw Error("datos inválidos");db.drafts=db.drafts||{};localStorage.setItem(STORE,JSON.stringify(db))}catch(err){db={version:2,people:[],records:[],drafts:{},pin:"0000"};alert("No se pudo recuperar el almacenamiento local. No borres los datos anteriores. "+err.message)}
+function change(fn){const previous=JSON.stringify(db);fn();try{localStorage.setItem(STORE,JSON.stringify(db));return true}catch(e){db=JSON.parse(previous);alert("No se pudieron guardar los datos. "+e.message);return false}}
+const active=()=>db.people.filter(p=>p.active!==false);
+const person=id=>db.people.find(p=>p.id===id);
+const latest=id=>db.records.filter(r=>r.person===id).sort((a,b)=>b.startAt.localeCompare(a.startAt))[0];
+const open=id=>db.records.filter(r=>r.person===id&&!r.endAt).sort((a,b)=>b.startAt.localeCompare(a.startAt))[0];
+const today=()=>dayOf(new Date().toISOString());
+function setStatus(message){$("homeStatus").textContent=message}
+function renderClock(){$("clock").textContent=new Intl.DateTimeFormat("es-BO",{timeZone:TZ,weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(new Date())+" · "+displayTime(new Date().toISOString())+" (Bolivia)"}
+function renderHome(){
+ const workers=$("workers"),people=active();
+ if(!people.length){workers.innerHTML='<div class="empty">Todavía no hay auxiliares registrados. Entra a <strong>Administración</strong> para añadirlos (PIN inicial 0000).</div>';return}
+ workers.innerHTML=people.map(p=>{
+  const r=open(p.id),last=latest(p.id),isOpen=!!r;
+  const lastText=isOpen?"Entrada registrada: "+stamp(r.startAt):last?"Último turno: "+stamp(last.startAt)+(last.endAt?" a "+stamp(last.endAt):""):"Sin turnos registrados";
+  const note=isOpen?r.note:(db.drafts[p.id]||"");
+  return '<article class="worker"><h2>'+esc(p.name)+'</h2><p class="state">'+(isOpen?"● Turno en curso":"● Listo para registrar")+'</p><p>'+esc(lastText)+'</p>'+(isOpen?'<p>Tiempo transcurrido: '+duration(Math.round((Date.now()-Date.parse(r.startAt))/60000))+'</p>':'')+'<button class="big '+(isOpen?"out":"primary")+'" data-punch="'+esc(p.id)+'">'+(isOpen?"Finalizar turno":"Entrar al turno")+'</button><label>Observaciones (opcional)<textarea data-note="'+esc(p.id)+'" placeholder="Ej.: cambio de turno, cobertura de feriado...">'+esc(note)+'</textarea></label></article>'
+ }).join("");
 }
-save();refresh();$("feedback").textContent=(opened?"Salida":"Entrada")+" de "+pname(personId)+" registrada a las "+time;
+function renderAdmin(){
+ $("staffList").innerHTML=db.people.map(p=>'<div class="staff-row"><input aria-label="Nombre del trabajador" data-name="'+esc(p.id)+'" value="'+esc(p.name)+'" maxlength="100"><button class="small" data-save-name="'+esc(p.id)+'">Guardar nombre</button><button class="small '+(p.active===false?"":"danger")+'" data-toggle="'+esc(p.id)+'">'+(p.active===false?"Reactivar":"Desactivar")+'</button></div>').join("");
+}
+function reportRecords(){
+ const from=$("dateFrom").value,to=$("dateTo").value,p=$("reportPerson").value;
+ if(!from||!to||from>to)return [];
+ return db.records.filter(r=>{const d=dayOf(r.startAt);return d>=from&&d<=to&&(!p||r.person===p)}).sort((a,b)=>b.startAt.localeCompare(a.startAt));
+}
+function renderReport(){
+ const select=$("reportPerson"),current=select.value;
+ select.innerHTML='<option value="">Todos los auxiliares</option>'+db.people.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.name)+'</option>').join("");
+ select.value=db.people.some(p=>p.id===current)?current:"";
+ const rows=reportRecords(),completed=rows.filter(r=>!!r.endAt),total=completed.reduce((n,r)=>n+minutes(r),0);
+ const printPerson=select.value?(person(select.value)?.name||""):"Todos";
+ $("printRange").textContent="Período: "+$("dateFrom").value+" al "+$("dateTo").value+" · Personal: "+printPerson;
+ $("summary").innerHTML='<div class="stat">Turnos registrados<strong>'+rows.length+'</strong></div><div class="stat">Turnos finalizados<strong>'+completed.length+'</strong></div><div class="stat">Horas trabajadas<strong>'+duration(total)+'</strong></div>';
+ const body=rows.map(r=>'<tr><td>'+esc(person(r.person)?.name||"Trabajador eliminado")+'</td><td>'+displayDate(r.startAt)+'</td><td>'+displayTime(r.startAt)+'</td><td>'+(r.endAt?displayDate(r.endAt):"—")+'</td><td>'+(r.endAt?displayTime(r.endAt):"Pendiente")+'</td><td>'+(r.endAt?duration(minutes(r)):"—")+'</td><td class="note-cell">'+esc(r.note||"—")+'</td></tr>').join("");
+ $("reportTable").innerHTML='<table><thead><tr><th>Auxiliar</th><th>Fecha entrada</th><th>Hora entrada</th><th>Fecha salida</th><th>Hora salida</th><th>Duración</th><th>Observaciones</th></tr></thead><tbody>'+(body||'<tr><td colspan="7">Sin turnos en el período seleccionado.</td></tr>')+'</tbody></table>';
+}
+function renderAll(){renderClock();renderHome();renderAdmin();renderReport()}
+function navigate(tab){
+ ["home","report","admin"].forEach(n=>$("screen-"+n).classList.toggle("hidden",n!==tab));
+ document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.nav===tab));
+ if(tab==="home")renderHome();if(tab==="report")renderReport();if(tab==="admin")renderAdmin();
+}
+function exportFile(data,name,type){const blob=new Blob([data],{type}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),2000)}
+$("workers").addEventListener("input",e=>{
+ const el=e.target.closest("[data-note]");if(!el)return;
+ const pid=el.dataset.note,r=open(pid),value=el.value;
+ change(()=>{if(r)r.note=value;else db.drafts[pid]=value});
 });
-setInterval(()=>{if(!$("inicio").classList.contains("hidden"))renderClockOnly()},30000);
-function renderClockOnly(){const now=new Date();$("clockBolivia").textContent=new Intl.DateTimeFormat("es-BO",{timeZone:TZ,weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(now)+" · "+tm(now)+" (Bolivia)"}
-
-function refresh(){renderWorkers();selects();$("personTable").innerHTML=table(["Nombre","Horario","Jornada","Valor hora","Acción"],db.people.map(p=>[esc(p.name),esc(p.start)+"–"+esc(p.end),esc(p.hours)+" h",money(p.rate),p.active===false?"Inactivo":'<button data-disable="'+p.id+'">Desactivar</button>']));$("shiftTable").innerHTML=table(["Fecha","Trabajador","Tipo","Horario","Motivo"],[...db.shifts].sort((a,b)=>b.date.localeCompare(a.date)).map(s=>[esc(s.date),esc(pname(s.person)),esc(s.kind),s.kind==="descanso"?"—":esc(s.start)+"–"+esc(s.end),esc(s.note)]));let today=dt(),rows=enumerate(today,today,""),present=rows.filter(x=>x.r?.start).length,late=rows.filter(x=>x.late).length,abs=rows.filter(x=>x.absent).length;$("stats").innerHTML=[["Trabajadores",active().length],["Presentes",present],["Retrasos",late],["Ausencias anteriores",abs]].map(x=>'<div class="stat">'+x[0]+'<strong>'+x[1]+'</strong></div>').join("");$("recent").innerHTML=table(["Fecha","Trabajador","Entrada","Salida"],[...db.records].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,12).map(r=>[esc(r.date),esc(pname(r.person)),esc(r.start||"—"),esc(r.end||"—")]));history();report()}
-function history(){const rows=enumerate($("histFrom").value,$("histTo").value,$("histPerson").value);$("histTable").innerHTML=table(["Fecha","Trabajador","Turno","Programado","Entrada","Salida","Retraso","Horas","Estado"],rows.map(x=>[x.date,esc(x.p.name),esc(x.s.kind),x.s.kind==="descanso"?"—":esc(x.s.start)+"–"+esc(x.s.end),esc(x.r?.start||"—"),esc(x.r?.end||"—"),x.late?'<span class="bad">'+x.delay+' min</span>':"—",(x.actual/60).toFixed(2),x.absent?"Ausencia":x.incomplete?"Incompleto":x.late?"Retraso":x.r?.start?"Asistencia":"—"]))}
-function report(){let rows=enumerate($("repFrom").value,$("repTo").value,$("repPerson").value),worked=rows.reduce((a,x)=>a+x.actual,0),extra=rows.reduce((a,x)=>a+x.extra,0),delay=rows.filter(x=>x.late).reduce((a,x)=>a+x.delay,0),amount=rows.reduce((a,x)=>a+x.extra/60*Number(x.p.rate||0)*Number(db.settings.multiplier||1),0);$("reportStats").innerHTML=[["Jornadas registradas",rows.filter(x=>x.r?.start).length],["Retrasos",rows.filter(x=>x.late).length+" / "+delay+" min"],["Ausencias",rows.filter(x=>x.absent).length],["Horas efectivas",(worked/60).toFixed(2)],["Horas adicionales",(extra/60).toFixed(2)],["Monto adicional estimado",money(amount)]].map(x=>'<div class="stat">'+x[0]+'<strong>'+x[1]+'</strong></div>').join("");$("reportTable").innerHTML=table(["Fecha","Trabajador","Tipo","Programado","Entrada","Salida","Retraso","Horas","Extra (h)","Adicional (Bs)","Observación"],rows.map(x=>[x.date,esc(x.p.name),esc(x.s.kind),x.s.kind==="descanso"?"—":esc(x.s.start)+"–"+esc(x.s.end),esc(x.r?.start||"—"),esc(x.r?.end||"—"),x.late?x.delay+" min":"—",(x.actual/60).toFixed(2),(x.extra/60).toFixed(2),money(x.extra/60*Number(x.p.rate||0)*Number(db.settings.multiplier||1)),esc(x.r?.note||(x.s.note==="Horario habitual"?"":x.s.note)||"")]));$("printMeta").textContent="Período: "+$("repFrom").value+" a "+$("repTo").value+" | Personal: "+($("repPerson").value?pname($("repPerson").value):"Todos")}
+$("workers").addEventListener("click",e=>{
+ const button=e.target.closest("[data-punch]");if(!button)return;
+ const pid=button.dataset.punch,p=person(pid);if(!p||p.active===false)return;
+ const input=$("workers").querySelector('[data-note="'+pid+'"]');
+ const note=input?.value.trim()||"";
+ const now=new Date().toISOString(),r=open(pid);
+ const ok=change(()=>{
+  if(r){r.endAt=now;r.note=note}
+  else{db.records.push({id:uid(),person:pid,startAt:now,endAt:null,note});db.drafts[pid]=""}
+ });
+ if(ok){renderAll();setStatus((r?"Salida":"Entrada")+" de "+p.name+" registrada a las "+displayTime(now)+" · "+displayDate(now))}
+});
+document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>{
+ if(b.dataset.nav!=="home"&&!adminUnlocked){
+  const pin=prompt("PIN de administración");if(pin===null)return;if(pin!==db.pin){alert("PIN incorrecto");return}adminUnlocked=true;
+ }
+ navigate(b.dataset.nav);
+}));
 let adminUnlocked=false;
-function unlock(){if(adminUnlocked)return true;const pin=prompt("PIN de administración");if(pin===null)return false;if(pin!==db.settings.pin){alert("PIN incorrecto");return false}adminUnlocked=true;return true}
-function showTab(t,admin=false){document.querySelectorAll(".tab").forEach(x=>x.classList.add("hidden"));$(t).classList.remove("hidden");$("adminNav").classList.toggle("hidden",!admin);document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("active",x.dataset.tab===(admin?"personal":t)));document.querySelectorAll("[data-admin]").forEach(x=>x.classList.toggle("active",x.dataset.admin===t));refresh()}
-document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{if(b.dataset.tab!=="inicio"&&!unlock())return;showTab(b.dataset.tab,b.dataset.tab==="personal")});
-document.querySelectorAll("[data-admin]").forEach(b=>b.onclick=()=>{if(unlock())showTab(b.dataset.admin,true)});
-$("personForm").onsubmit=e=>{e.preventDefault();if(active().length>=4)return alert("El sistema admite cuatro trabajadores activos. Puedes desactivar uno desde Administración.");if(active().some(p=>p.name.toLowerCase()===$("pn").value.trim().toLowerCase()))return alert("El trabajador ya está registrado.");db.people.push({id:id(),name:$("pn").value.trim(),start:$("ps").value,end:$("pe").value,hours:Number($("ph").value),rate:Number($("pr").value),days:$("pd").value.split(",").map(Number),active:true});save();e.target.reset();refresh()};
-$("personTable").onclick=e=>{const i=e.target.dataset.disable;if(!i)return;if(!confirm("¿Desactivar trabajador? Su historial se conserva."))return;person(i).active=false;save();refresh()};
-$("shiftForm").onsubmit=e=>{e.preventDefault();const p=$("shiftPerson").value,d=$("shiftDate").value,kind=$("shiftKind").value;if(!p||!d)return alert("Selecciona trabajador y fecha");if(kind!=="descanso"&&$("shiftStart").value===$("shiftEnd").value)return alert("El turno debe tener duración positiva");const old=db.shifts.find(x=>x.person===p&&x.date===d),s={person:p,date:d,kind,start:$("shiftStart").value,end:$("shiftEnd").value,note:$("shiftNote").value};db.shifts=db.shifts.filter(x=>!(x.person===p&&x.date===d));db.shifts.push(s);db.audit.push({at:new Date().toISOString(),event:"turno",before:old||null,after:s});save();refresh();alert("Turno guardado")};
-$("markBtn").onclick=()=>{let p=$("markPerson").value,type=$("markType").value,d=dt(),t=tm();if(!p)return alert("Selecciona trabajador");let r=rec(p,d);if(!r){r={person:p,date:d,start:"",end:""};db.records.push(r)}if(type==="in"){if(r.start)return alert("Entrada ya registrada para hoy");r.start=t}else{if(!r.start)return alert("Registra primero la entrada");if(r.end)return alert("Salida ya registrada");r.end=t}save();refresh();alert((type==="in"?"Entrada":"Salida")+" registrada: "+t)};
-$("histRefresh").onclick=history;$("repRefresh").onclick=report;$("printBtn").onclick=()=>{report();window.print()};$("correctionForm").onsubmit=e=>{e.preventDefault();if($("corPin").value!==db.settings.pin)return alert("PIN incorrecto");let p=$("corPerson").value,d=$("corDate").value;if(!p||!d)return alert("Selecciona trabajador y fecha");if(!$("corIn").value&&!$("corOut").value)return alert("Indica una marcación");let old=rec(p,d),next={person:p,date:d,start:$("corIn").value,end:$("corOut").value};db.audit.push({at:new Date().toISOString(),event:"corrección",before:old?{...old}:null,after:{...next},reason:$("corReason").value});db.records=db.records.filter(x=>!(x.person===p&&x.date===d));db.records.push(next);save();e.target.reset();refresh();alert("Corrección guardada con auditoría")};
-$("settingsForm").onsubmit=e=>{e.preventDefault();if($("oldPin").value!==db.settings.pin)return alert("PIN incorrecto");db.settings.tolerance=Number($("tolerance").value);db.settings.breakMin=Number($("breakMin").value);db.settings.multiplier=Number($("multiplier").value);if($("newPin").value)db.settings.pin=$("newPin").value;save();$("oldPin").value="";$("newPin").value="";refresh();alert("Configuración guardada")};
-$("exportBtn").onclick=()=>download(JSON.stringify(db,null,2),"consulfarma-respaldo-"+dt()+".json","application/json");$("restoreFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const x=JSON.parse(await f.text());if(!Array.isArray(x.people)||!Array.isArray(x.records)||!Array.isArray(x.shifts)||!x.settings)throw Error("Formato no reconocido");if(!confirm("¿Reemplazar TODOS los datos locales por el respaldo?"))return;db=x;db.audit??=[];save();refresh();alert("Respaldo restaurado")}catch(err){alert("No se pudo restaurar: "+err.message)}e.target.value=""};
-$("csvBtn").onclick=()=>{let rows=enumerate($("repFrom").value,$("repTo").value,$("repPerson").value),csv=[["Fecha","Trabajador","Tipo","Horario entrada","Horario salida","Entrada real","Salida real","Minutos retraso","Horas trabajadas","Horas extra","Monto adicional Bs","Observación"],...rows.map(x=>[x.date,x.p.name,x.s.kind,x.s.start||"",x.s.end||"",x.r?.start||"",x.r?.end||"",x.late?x.delay:0,(x.actual/60).toFixed(2),(x.extra/60).toFixed(2),(x.extra/60*Number(x.p.rate||0)*Number(db.settings.multiplier||1)).toFixed(2),x.r?.note||(x.s.note==="Horario habitual"?"":x.s.note)||""])].map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(";")).join("\r\n");download("\uFEFF"+csv,"asistencias-"+$("repFrom").value+"-"+$("repTo").value+".csv","text/csv;charset=utf-8")};
-const now=dt();["shiftDate","corDate","histTo","repTo"].forEach(x=>$(x).value=now);["histFrom","repFrom"].forEach(x=>$(x).value=now.slice(0,8)+"01");$("tolerance").value=db.settings.tolerance;$("breakMin").value=db.settings.breakMin;$("multiplier").value=db.settings.multiplier;refresh();
+$("addForm").addEventListener("submit",e=>{
+ e.preventDefault();const name=$("newName").value.trim();
+ if(!name)return;if(active().length>=4)return alert("Ya hay cuatro auxiliares activos.");
+ if(active().some(p=>p.name.toLowerCase()===name.toLowerCase()))return alert("Ese auxiliar ya está registrado.");
+ if(change(()=>db.people.push({id:uid(),name,active:true}))){$("newName").value="";renderAll()}
+});
+$("staffList").addEventListener("click",e=>{
+ let b=e.target.closest("button");if(!b)return;
+ if(b.dataset.saveName){
+  const id=b.dataset.saveName,el=$("staffList").querySelector('[data-name="'+id+'"]'),name=el.value.trim();
+  if(!name)return alert("Ingresa un nombre.");
+  if(db.people.some(p=>p.id!==id&&p.active!==false&&p.name.toLowerCase()===name.toLowerCase()))return alert("El nombre está duplicado.");
+  if(change(()=>{person(id).name=name}))renderAll();
+ }else if(b.dataset.toggle){
+  const id=b.dataset.toggle,p=person(id),enable=p.active===false;
+  if(enable&&active().length>=4)return alert("Ya hay cuatro auxiliares activos.");
+  if(!enable&&open(id))return alert("Finaliza el turno antes de desactivar al auxiliar.");
+  if(change(()=>{p.active=enable}))renderAll();
+ }
+});
+$("generate").onclick=renderReport;
+$("dateFrom").addEventListener("change",renderReport);$("dateTo").addEventListener("change",renderReport);$("reportPerson").addEventListener("change",renderReport);
+$("print").onclick=()=>{renderReport();window.print()};
+$("csv").onclick=()=>{
+ const rows=reportRecords(),lines=[["Auxiliar","Fecha de entrada","Hora de entrada","Fecha de salida","Hora de salida","Minutos trabajados","Observación"],...rows.map(r=>[person(r.person)?.name||"",displayDate(r.startAt),displayTime(r.startAt),r.endAt?displayDate(r.endAt):"",r.endAt?displayTime(r.endAt):"",r.endAt?minutes(r):"",r.note||""])];
+ const csv=lines.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(";")).join("\r\n");
+ exportFile("\uFEFF"+csv,"consulfarma-asistencias-"+today()+".csv","text/csv;charset=utf-8");
+};
+$("backup").onclick=()=>exportFile(JSON.stringify(db,null,2),"consulfarma-respaldo-"+today()+".json","application/json");
+$("restore").addEventListener("change",async e=>{
+ const file=e.target.files[0];if(!file)return;
+ try{
+  const incoming=JSON.parse(await file.text());if(!valid(incoming))throw Error("Archivo de respaldo inválido");
+  if(!confirm("¿Reemplazar los datos locales por este respaldo?"))return;
+  if(change(()=>{db=incoming;db.drafts??={}})){renderAll();navigate("admin");alert("Respaldo restaurado")}
+ }catch(err){alert("Error restaurando: "+err.message)}finally{e.target.value=""}
+});
+$("pinForm").addEventListener("submit",e=>{
+ e.preventDefault();const pin=$("newPin").value.trim();if(pin.length<4)return;
+ if(change(()=>{db.pin=pin})){$("newPin").value="";alert("PIN actualizado")}
+});
+$("dateFrom").value=today().slice(0,8)+"01";$("dateTo").value=today();
+renderAll();setInterval(()=>{renderClock();if(!$("screen-home").classList.contains("hidden")){document.querySelectorAll("[data-punch]").forEach(button=>{const r=open(button.dataset.punch);const card=button.closest(".worker"),p=card?.querySelector(".elapsed");if(r&&p)p.textContent=duration(Math.round((Date.now()-Date.parse(r.startAt))/60000))})}},30000);
+})();
 </script></body></html>
